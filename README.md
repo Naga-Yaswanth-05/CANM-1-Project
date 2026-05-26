@@ -1,6 +1,6 @@
 # Numerical Methods — Polynomial Interpolation, Approximation & Root Finding
 
-Computer Aided Numerical Methods – I | **IIT Hyderabad**
+Computer Aided Numerical Methods – I 
 
 > Full theory, derivations and plots → `docs/canm_project_report.pdf`
 
