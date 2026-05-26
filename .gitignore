@@ -1,0 +1,60 @@
+# macOS
+.DS_Store
+
+# Compiled binaries
+*.o
+*.out
+*.exe
+a.out
+main
+
+# Generated CSVs — main pipeline
+comparison.csv
+comparision_25.csv
+polynomial_coefficients.csv
+qr_polynomial_coefficients.csv
+Chebyshev_using_normal_equation_polynomial_coefficients.csv
+Chebyshev_using_gradient_descent_polynomial_coefficients.csv
+Newton_Raphson_Roots.csv
+Secant_Roots.csv
+
+# Generated CSVs — Chebyshev comparison
+cheby_qr.csv
+cheby_normal.csv
+cheby_gradient.csv
+
+# Generated CSVs — degree sweep
+degree6_sin.csv
+degree9_sin.csv
+degree12_sin.csv
+degree15_sin.csv
+degree18_sin.csv
+degree24_sin.csv
+
+# Generated CSVs — convergence analysis
+secant_ndd_roots.csv
+newton_rp_ndd_roots.csv
+secant_chebyshev_roots.csv
+newton_rp_chebyshev_roots.csv
+secant_ndd_err_ord.csv
+newton_rp_ndd_err_ord.csv
+secant_chebyshev_err_ord.csv
+newton_rp_chebyshev_err_ord.csv
+secant_output.csv
+newton_output.csv
+
+# Generated plots
+*.png
+*.jpg
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Editors
+.vscode/
+.idea/
+
+# Keep outputs/ folder tracked but empty
+outputs/*
+!outputs/.gitkeep
