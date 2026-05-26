@@ -142,8 +142,8 @@ QR is preferred — it avoids squaring the condition number, making it most stab
 
 | Root-finding Method | Convergence Order |
 |---|---|
-| Newton-Raphson | ~2 (Quadratic) ✅ |
-| Secant | ~1.618 (Superlinear) ✅ |
+| Newton-Raphson | ~2 (Quadratic) |
+| Secant | ~1.618 (Superlinear) |
 
 ---
 
