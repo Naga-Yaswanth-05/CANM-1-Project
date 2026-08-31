@@ -4,14 +4,14 @@ import os
 os.chdir(os.path.dirname(os.path.abspath(__file__)))
 
 # load the actual data
-actual = np.genfromtxt("data.csv", delimiter=",", skip_header=1)
+actual = np.genfromtxt("../data/data.csv", delimiter=",", skip_header=1)
 x_actual = actual[:, 0]
 y_actual = actual[:, 1]
 
 # load the three approximation files
-data1 = np.genfromtxt("cheby_qr.csv", delimiter=",", skip_header=0)
-data2 = np.genfromtxt("cheby_normal.csv", delimiter=",", skip_header=0)
-data3 = np.genfromtxt("cheby_gradient.csv", delimiter=",", skip_header=0)
+data1 = np.genfromtxt("../src/cheby_qr.csv", delimiter=",", skip_header=0)
+data2 = np.genfromtxt("../src/cheby_normal.csv", delimiter=",", skip_header=0)
+data3 = np.genfromtxt("../src/cheby_gradient.csv", delimiter=",", skip_header=0)
 
 x1 = data1[:, 0]
 y1 = data1[:, 2]
