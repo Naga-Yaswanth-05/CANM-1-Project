@@ -11,6 +11,7 @@
 #include<algorithm>
 #include "NR_Secant.h"
 #include "utils.h"
+#include "project_paths.h"
 
 using namespace std;
 
@@ -115,7 +116,7 @@ using namespace std;
         vector<long double> original = convert_to_original_x(standard, a, b_val);
 
 
-        run_root_finding(original, x);
+        run_root_finding(original, x, "chebyshev");
 
         cout << "\nChebyshev Polynomial (Gadient Descent):\nP(x) = ";
 
@@ -139,16 +140,23 @@ using namespace std;
 
         cout << endl;
 
-        ofstream out("Chebyshev_using_gradient_descent_polynomial_coefficients.csv");
+        ofstream out(project_paths::output_file("Chebyshev_using_gradient_descent_polynomial_coefficients.csv"));
+        ofstream canonical_out(project_paths::output_file("chebyshev_coeffs.csv"));
+        if (!out.is_open() || !canonical_out.is_open()) {
+            cerr << "Error: Could not write Chebyshev coefficient files.\n";
+            return {};
+        }
         out << fixed << setprecision(15);
         // out << a << "\n";
         // out << b_val << "\n";
         for(auto v : original){
             if(fabsl(v) < EPS) v = 0;
             out << v << "\n";
+            canonical_out << v << "\n";
         }
 
         out.close();
+        canonical_out.close();
 
         return c;
     }

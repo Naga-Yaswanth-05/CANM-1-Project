@@ -7,6 +7,7 @@
 #include <fstream>
 
 #include "NR_Secant.h"
+#include "project_paths.h"
 
 using namespace std;
 
@@ -53,7 +54,7 @@ vector<long double> newton_divided_difference(vector<long double>& x, vector<lon
         term = new_term;
     }
 
-    run_root_finding(coeff_standard, x);
+    run_root_finding(coeff_standard, x, "ndd");
 
     cout << "\n divided difference Polynomial in standard form"<< endl;
     cout << "\n P(x) = ";
@@ -86,7 +87,11 @@ vector<long double> newton_divided_difference(vector<long double>& x, vector<lon
 
     cout << endl;
 
-    ofstream out("polynomial_coefficients.csv");
+    ofstream out(project_paths::output_file("polynomial_coefficients.csv"));
+    if (!out.is_open()) {
+        cerr << "Error: Could not write polynomial_coefficients.csv\n";
+        return {};
+    }
     out << fixed << setprecision(15);
 
     for(int i = 0; i < n; i++){

@@ -9,6 +9,7 @@
 #include<algorithm>
 
 #include "utils.h"
+#include "project_paths.h"
 
 using namespace std;
 
@@ -140,7 +141,7 @@ vector<long double> chebyshev_householder(vector<long double>& x, vector<long do
     // NEW STEP (convert x' → x)
     vector<long double> original = convert_to_original_x(standard, a, b_val);
 
-    run_root_finding(original, x);
+    run_root_finding(original, x, "chebyshev");
 
     cout << "\nResulting Polynomial:\nP(x) = ";
 
@@ -174,7 +175,12 @@ vector<long double> chebyshev_householder(vector<long double>& x, vector<long do
     }
     cout << endl;
 
-    ofstream out("qr_polynomial_coefficients.csv");
+    ofstream out(project_paths::output_file("qr_polynomial_coefficients.csv"));
+    ofstream canonical_out(project_paths::output_file("chebyshev_coeffs.csv"));
+    if (!out.is_open() || !canonical_out.is_open()) {
+        cerr << "Error: Could not write Chebyshev coefficient files.\n";
+        return {};
+    }
     out << fixed << setprecision(15);
 
     // out << a << "\n";
@@ -183,9 +189,11 @@ vector<long double> chebyshev_householder(vector<long double>& x, vector<long do
     for(auto v : original){
         if(fabsl(v) < EPS) v = 0;
         out << v << "\n";
+        canonical_out << v << "\n";
     }
 
     out.close();
+    canonical_out.close();
 
     return c;
 }

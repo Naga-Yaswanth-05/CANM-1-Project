@@ -7,6 +7,8 @@
 #include<cmath>
 #include<iomanip>
 #include<algorithm>
+#include<string>
+#include "project_paths.h"
 
 using namespace std;
 
@@ -115,7 +117,7 @@ vector<long double> findAllRoots(long double a,long double b,int steps,const vec
     return roots;
 }
 
-void run_root_finding(vector<long double>& coeff_standard, vector<long double>& x){
+void run_root_finding(vector<long double>& coeff_standard, vector<long double>& x, const string& polynomial_tag){
 
     vector<long double> derivCoeffs;
     for (int i = 1; i < coeff_standard.size(); i++) {
@@ -138,13 +140,13 @@ void run_root_finding(vector<long double>& coeff_standard, vector<long double>& 
             cout << "Root " << i+1 << " = " << setprecision(16)<< roots[i] << endl;
         }
 
-        ofstream out("Newton_Raphson_Roots.csv");
-
-        for(int i = 0; i < roots.size(); i++){
-            out << setprecision(16)<< roots[i] << "\n";
+        const string filename = "newton_" + polynomial_tag + "_distinct_roots.csv";
+        ofstream out(project_paths::output_file(filename));
+        if (!out.is_open()) {
+            cerr << "Error: Could not write root file: " << filename << '\n';
+            return;
         }
-
-        out.close();
+        for (long double root : roots) out << setprecision(16) << root << "\n";
     }
 
     if (coeff_standard.size() > 2) {
@@ -160,13 +162,13 @@ void run_root_finding(vector<long double>& coeff_standard, vector<long double>& 
             cout << "Root " << i+1 << " = " << setprecision(16)<< roots[i]<< endl;
         }
 
-        ofstream out("Secant_Roots.csv");
-
-        for(int i = 0; i < roots.size(); i++){
-            out << setprecision(16)<< roots[i] << "\n";
+        const string filename = "secant_" + polynomial_tag + "_distinct_roots.csv";
+        ofstream out(project_paths::output_file(filename));
+        if (!out.is_open()) {
+            cerr << "Error: Could not write root file: " << filename << '\n';
+            return;
         }
-
-        out.close();
+        for (long double root : roots) out << setprecision(16) << root << "\n";
     }
 
     cout<<endl;

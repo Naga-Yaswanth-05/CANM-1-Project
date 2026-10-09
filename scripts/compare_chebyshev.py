@@ -1,63 +1,74 @@
-import numpy as np
+"""Compare the three Chebyshev solvers on the currently selected dataset."""
 import matplotlib.pyplot as plt
-import os
-os.chdir(os.path.dirname(os.path.abspath(__file__)))
+import numpy as np
 
-# load the actual data
-actual = np.genfromtxt("../data/data.csv", delimiter=",", skip_header=1)
-x_actual = actual[:, 0]
-y_actual = actual[:, 1]
+from project_utils import (
+    OUTPUT_DIR,
+    active_dataset_filename,
+    dataset_key,
+    dataset_label,
+    exact_function,
+)
 
-# load the three approximation files
-data1 = np.genfromtxt("../src/cheby_qr.csv", delimiter=",", skip_header=0)
-data2 = np.genfromtxt("../src/cheby_normal.csv", delimiter=",", skip_header=0)
-data3 = np.genfromtxt("../src/cheby_gradient.csv", delimiter=",", skip_header=0)
 
-x1 = data1[:, 0]
-y1 = data1[:, 2]
+def load_approximation(label, path):
+    if not path.is_file():
+        raise FileNotFoundError(
+            f"Missing {label} comparison file: {path}. Run the C++ program once with "
+            "--method 1, --method 2, and --method 3 using the same dataset."
+        )
+    data = np.genfromtxt(path, delimiter=",", skip_header=1)
+    if data.ndim != 2 or data.shape[1] < 3 or data.shape[0] == 0:
+        raise ValueError(f"Invalid comparison CSV format: {path}")
+    if not np.isfinite(data[:, :3]).all():
+        raise ValueError(f"Non-numeric or non-finite values found in {path}")
+    return data[:, 0], data[:, 2]
 
-x2 = data2[:, 0]
-y2 = data2[:, 2]
 
-x3 = data3[:, 0]
-y3 = data3[:, 2]
+def main():
+    dataset_filename = active_dataset_filename()
+    key = dataset_key(dataset_filename)
+    method_files = {
+        "QR": OUTPUT_DIR / f"cheby_qr_{key}.csv",
+        "Normal Equations": OUTPUT_DIR / f"cheby_normal_{key}.csv",
+        "Gradient Descent": OUTPUT_DIR / f"cheby_gradient_{key}.csv",
+    }
 
-# calculate absolute errors
-err1 = np.abs(y1 - y_actual)
-err2 = np.abs(y2 - y_actual)
-err3 = np.abs(y3 - y_actual)
+    errors = {}
+    reference_x = None
+    for label, path in method_files.items():
+        x, y_approx = load_approximation(label, path)
+        if reference_x is None:
+            reference_x = x
+        elif (x.shape != reference_x.shape or
+              not np.allclose(x, reference_x, rtol=0, atol=1e-12)):
+            raise ValueError("The three method files use different x grids.")
+        y_true = exact_function(dataset_filename, x)
+        errors[label] = float(np.sqrt(np.mean((y_approx - y_true) ** 2)))
 
-# calculate rms errors
-rms1 = np.sqrt(np.mean(err1**2))
-rms2 = np.sqrt(np.mean(err2**2))
-rms3 = np.sqrt(np.mean(err3**2))
+    methods = list(errors)
+    rms_values = [errors[name] for name in methods]
+    fig, ax = plt.subplots(figsize=(9, 6))
+    bars = ax.bar(methods, rms_values, width=0.5, edgecolor="black", linewidth=0.8)
+    for bar, value in zip(bars, rms_values):
+        ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height(),
+                f"{value:.6e}", ha="center", va="bottom", fontsize=10)
+    ax.set_ylabel("RMS Error", fontsize=12)
+    ax.set_title(f"Chebyshev Approximation RMS Error — {dataset_label(dataset_filename)}",
+                 fontsize=13, fontweight="bold")
+    ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda y, _: f"{y:.2e}"))
+    ax.grid(True, axis="y", linestyle="--", alpha=0.5)
+    ax.spines["top"].set_visible(False)
+    ax.spines["right"].set_visible(False)
+    plt.tight_layout()
+    plot_path = OUTPUT_DIR / f"chebyshev_method_comparison_{key}.png"
+    plt.savefig(plot_path, dpi=150, bbox_inches="tight")
+    print(f"Saved {plot_path}")
+    plt.show()
 
-# bar graph
-methods = ['QR', 'Normal Equations', 'Gradient Descent']
-rms_values = [rms1, rms2, rms3]
-colors = ['#4C72B0', '#DD8452', '#55A868']
 
-fig, ax = plt.subplots(figsize=(9, 6))
-bars = ax.bar(methods, rms_values, color=colors, width=0.5, edgecolor='black', linewidth=0.8)
-
-# write value on top of each bar
-for bar, val in zip(bars, rms_values):
-    ax.text(bar.get_x() + bar.get_width() / 2, bar.get_height() + (max(rms_values) - min(rms_values)) * 0.01,
-            f'{val:.6e}', ha='center', va='bottom', fontsize=11, fontweight='bold')
-
-# zoom in by setting y limits close to the actual values
-padding = (max(rms_values) - min(rms_values)) * 0.3
-ax.set_ylim(min(rms_values) - padding, max(rms_values) + padding * 4)
-
-# format y axis to show enough precision
-ax.yaxis.set_major_formatter(plt.FuncFormatter(lambda y, _: f'{y:.2e}'))
-
-ax.set_ylabel('RMS Error', fontsize=12)
-ax.set_title('RMS Error of Chebyshev Least Squares Approximations', fontsize=13, fontweight='bold')
-ax.grid(True, axis='y', linestyle='--', alpha=0.5)
-ax.spines['top'].set_visible(False)
-ax.spines['right'].set_visible(False)
-plt.tight_layout()
-
-plt.savefig("error_plot.png", dpi=150)
-plt.show()
+if __name__ == "__main__":
+    try:
+        main()
+    except (FileNotFoundError, ValueError) as error:
+        raise SystemExit(f"[ERROR] {error}") from error
