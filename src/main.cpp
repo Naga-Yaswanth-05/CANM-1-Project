@@ -122,10 +122,38 @@ bool write_active_dataset(const string& filename) {
 }
 
 bool copy_file_overwrite(const fs::path& source, const fs::path& destination) {
+    // Stage the new contents first. Some Windows/OneDrive filesystem states can
+    // report "File exists" when copy_file overwrites an existing destination,
+    // even with overwrite_existing. Copy to a sibling temporary file, then
+    // replace the destination explicitly.
     error_code ec;
-    fs::copy_file(source, destination, fs::copy_options::overwrite_existing, ec);
+    fs::path temporary = destination;
+    temporary += ".tmp";
+
+    fs::copy_file(source, temporary, fs::copy_options::overwrite_existing, ec);
     if (ec) {
-        cerr << "Error: Could not save " << destination << " (" << ec.message() << ")\n";
+        cerr << "Error: Could not stage output file " << temporary
+             << " (" << ec.message() << ")\n";
+        return false;
+    }
+
+    ec.clear();
+    fs::remove(destination, ec); // No error if destination does not exist.
+    if (ec) {
+        error_code cleanup_ec;
+        fs::remove(temporary, cleanup_ec);
+        cerr << "Error: Could not replace existing output file " << destination
+             << " (" << ec.message() << "). Close any program using the file and retry.\n";
+        return false;
+    }
+
+    ec.clear();
+    fs::rename(temporary, destination, ec);
+    if (ec) {
+        error_code cleanup_ec;
+        fs::remove(temporary, cleanup_ec);
+        cerr << "Error: Could not install output file " << destination
+             << " (" << ec.message() << ")\n";
         return false;
     }
     return true;
